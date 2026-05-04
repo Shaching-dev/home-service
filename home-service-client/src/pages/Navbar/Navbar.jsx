@@ -32,13 +32,14 @@ import {
   MenuIcon,
   ChevronDownIcon,
   LogInIcon,
+  LogOutIcon,
 } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import Logo from "@/utils/Logo/Logo";
+import useAuth from "@/hooks/useAuth/useAuth";
 
 const profiles = [
   { icon: <UserIcon className="w-4 h-4" />, label: "Profile", link: "prfile" },
-
   {
     icon: <SettingsIcon className="w-4 h-4" />,
     label: "Settings",
@@ -48,12 +49,6 @@ const profiles = [
     icon: <UserIcon className="w-4 h-4" />,
     label: "Dashboard",
     link: "dashboard",
-  },
-
-  {
-    icon: <LogInIcon className="w-4 h-4" />,
-    label: "Sign in",
-    link: "auth/login",
   },
 ];
 
@@ -147,6 +142,16 @@ const Navbar = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const location = useLocation();
 
+  const { user, signOutUser } = useAuth();
+
+  const handleLogOut = async () => {
+    try {
+      await signOutUser();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <div className="px-5 bg-chart-2 py-3 text-primary-foreground">
       <div className="flex justify-between items-center">
@@ -209,7 +214,11 @@ const Navbar = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Avatar className="cursor-pointer">
-                <AvatarImage src="https://github.com/shadcn.png" />
+                {user ? (
+                  <AvatarImage src={user?.photoURL} />
+                ) : (
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                )}
                 <AvatarFallback>SC</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
@@ -224,6 +233,23 @@ const Navbar = () => {
                   <Link to={`/${profile.link}`}>{profile.label}</Link>
                 </DropdownMenuItem>
               ))}
+
+              {user ? (
+                <DropdownMenuItem
+                  className={`text-destructive`}
+                  onClick={handleLogOut}
+                >
+                  <LogOutIcon />
+                  Sign out
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem asChild className={`text-custom-color`}>
+                  <Link to={`/auth/login`}>
+                    <LogInIcon />
+                    Sign in
+                  </Link>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 

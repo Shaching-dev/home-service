@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 export const uploadToCloudinary = async (file) => {
   if (!file) return null;
-
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_PRESET);

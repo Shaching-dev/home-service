@@ -8,6 +8,8 @@ export const getFriendlyErrorMessage = (errorCode) => {
       return "Please enter a valid email address.";
     case "auth/network-request-failed":
       return "Network error. Please check your internet connection.";
+    case "auth/invalid-credential":
+      return "Invalid email and password. Please try agein";
     default:
       return "An unexpected error occurred. Please try again.";
   }

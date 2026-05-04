@@ -12,16 +12,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SocialLogin from "../SocialLogin/SocialLogin";
 import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import useAuth from "@/hooks/useAuth/useAuth";
+import { toast } from "sonner";
+import { useState } from "react";
+import { LoaderCircle } from "lucide-react";
+import { getFriendlyErrorMessage } from "@/utils/authErrors/authErrors";
 
 const Login = () => {
+  const { signInwithEmail } = useAuth();
+  const [isSubmiting, setIssubmitting] = useState(false);
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    // formState: { errors },
   } = useForm();
 
-  const handleLoginWithEmail = (data) => {
-    console.log(data);
+  const location = useLocation();
+  const from = location.state?.from.pathname || "/";
+  const navigate = useNavigate();
+
+  const handleLoginWithEmail = async (data) => {
+    setIssubmitting(true);
+    try {
+      const res = await signInwithEmail(data.email, data.password);
+      navigate(from, { replace: true });
+      toast.success(`Welcome to ${res.user.displayName}`);
+    } catch (err) {
+      const message = err.code
+        ? getFriendlyErrorMessage(err.code)
+        : err.message;
+
+      toast.error(message);
+    } finally {
+      setIssubmitting(false);
+    }
   };
 
   return (
@@ -33,7 +59,9 @@ const Login = () => {
             Enter your email below to login to your account
           </CardDescription>
           <CardAction>
-            <Button variant="link">Sign Up</Button>
+            <Link state={location.state} to={`/auth/register`}>
+              <Button variant="link">Sign Up</Button>
+            </Link>
           </CardAction>
         </CardHeader>
         <CardContent>
@@ -69,8 +97,14 @@ const Login = () => {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full">
-              Login
+            <Button disabled={isSubmiting} type="submit" className="w-full">
+              {isSubmiting ? (
+                <span className="animate-spin">
+                  <LoaderCircle />
+                </span>
+              ) : (
+                "Login"
+              )}
             </Button>
           </form>
         </CardContent>

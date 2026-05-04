@@ -19,6 +19,7 @@ import useAuth from "@/hooks/useAuth/useAuth";
 import { toast } from "sonner";
 import { handleUserRegistration } from "../authService/authService";
 import { getFriendlyErrorMessage } from "@/utils/authErrors/authErrors";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Register = () => {
   const authHooks = useAuth();
@@ -27,8 +28,13 @@ const Register = () => {
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm();
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from.pathname || "/";
 
   const [showPassword, setShowPassword] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -38,7 +44,6 @@ const Register = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Clean up OLD preview memory before creating a new one
     if (preview) URL.revokeObjectURL(preview);
 
     if (file.size > 10 * 1024 * 1024) {
@@ -73,11 +78,13 @@ const Register = () => {
     const toastId = toast.loading("Creating your account...");
 
     try {
-      const user = await handleUserRegistration(data, authHooks);
-      console.log(user);
+      const result = await handleUserRegistration(data, authHooks);
 
+      console.log(result);
+      reset();
       // Update toast to success
-      toast.success(`Welcome, ${data.name}!`, { id: toastId });
+      navigate(from, { replace: true });
+      toast.success(`Welcome, ${result?.displayName}!`, { id: toastId });
 
       // DELAY REDIRECTION SLIGHTLY (Optional but helps UI feel better)
       // setTimeout(() => navigate('/dashboard'), 1500);
@@ -98,12 +105,12 @@ const Register = () => {
     <div>
       <Card className="max-w-lg">
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
+          <CardTitle>Create Your Account!</CardTitle>
+          <CardDescription>Try our services</CardDescription>
           <CardAction>
-            <Button variant="link">Sign Up</Button>
+            <Link to={`/auth/login`}>
+              <Button variant="link">Login</Button>
+            </Link>
           </CardAction>
         </CardHeader>
         <CardContent>
