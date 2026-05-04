@@ -37,11 +37,15 @@ const Register = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Clean up OLD preview memory before creating a new one
+    if (preview) URL.revokeObjectURL(preview);
+
     if (file.size > 10 * 1024 * 1024) {
       setFileError("File must be less than 10MB");
       return;
     }
-    setFileError("");
+
     const previewURL = URL.createObjectURL(file);
     setPreview(previewURL);
   };
@@ -66,22 +70,30 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    const toastId = toast.loading("Creating your account");
+    const toastId = toast.loading("Creating your account...");
 
     try {
-      await handleUserRegistration(data, authHooks);
-      toast.success("Account created successfully!", { id: toastId });
+      const user = await handleUserRegistration(data, authHooks);
+      console.log(user);
+
+      // Update toast to success
+      toast.success(`Welcome, ${data.name}!`, { id: toastId });
+
+      // DELAY REDIRECTION SLIGHTLY (Optional but helps UI feel better)
+      // setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err) {
-      console.error(err);
+      console.error("Registration Error:", err);
+
+      // Check if it's a Firebase error (has a .code) or a generic Error (has .message)
       const message = err.code
         ? getFriendlyErrorMessage(err.code)
         : err.message;
+
       toast.error(message, { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div>
       <Card className="max-w-lg">
