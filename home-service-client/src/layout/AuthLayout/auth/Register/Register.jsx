@@ -13,9 +13,16 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import SocialLogin from "../SocialLogin/SocialLogin";
 import { useState } from "react";
-import { Eye, EyeClosed, ImageIcon, X } from "lucide-react";
+import { Eye, EyeClosed, ImageIcon, LoaderCircle, X } from "lucide-react";
+import useAuth from "@/hooks/useAuth/useAuth";
+// import axios from "axios";
+import { toast } from "sonner";
+import { handleUserRegistration } from "../authService/authService";
+import { getFriendlyErrorMessage } from "@/utils/authErrors/authErrors";
 
 const Register = () => {
+  const authHooks = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -40,8 +47,9 @@ const Register = () => {
   };
 
   const clearImage = () => {
+    if (preview) URL.revokeObjectURL(preview);
     setPreview(null);
-    setFileError("");
+    // setFileError("");
     setValue("photo", null);
   };
 
@@ -56,9 +64,22 @@ const Register = () => {
     },
   });
 
-  const handleRegisterWithEmail = (data) => {
-    const photoFile = data.photo[0];
-    console.log(data, photoFile);
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
+    const toastId = toast.loading("Creating your account");
+
+    try {
+      await handleUserRegistration(data, authHooks);
+      toast.success("Account created successfully!", { id: toastId });
+    } catch (err) {
+      console.error(err);
+      const message = err.code
+        ? getFriendlyErrorMessage(err.code)
+        : err.message;
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -74,7 +95,7 @@ const Register = () => {
           </CardAction>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(handleRegisterWithEmail)}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6 my-5">
               <div className="mx-auto">
                 <label className=" px-5 text-[16px]">Profile Picture</label>
@@ -179,8 +200,14 @@ const Register = () => {
                 </div>
               </div>
             </div>
-            <Button type="submit" className="w-full">
-              Register
+            <Button disabled={isSubmitting} type="submit" className="w-full">
+              {isSubmitting ? (
+                <span className="animate-spin">
+                  <LoaderCircle />
+                </span>
+              ) : (
+                <span>Register</span>
+              )}
             </Button>
           </form>
         </CardContent>
