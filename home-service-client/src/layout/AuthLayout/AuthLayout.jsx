@@ -4,7 +4,7 @@ import { NavLink, Outlet } from "react-router-dom";
 
 const AuthLayout = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen mx-auto">
       <h3 className="text-2xl text-center">
         Welcome to <Logo />
       </h3>

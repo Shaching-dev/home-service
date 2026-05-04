@@ -11,8 +11,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SocialLogin from "../SocialLogin/SocialLogin";
+import { useForm } from "react-hook-form";
 
 const Login = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const handleLoginWithEmail = (data) => {
+    console.log(data);
+  };
+
   return (
     <div>
       <Card className="max-w-lg">
@@ -26,11 +37,12 @@ const Login = () => {
           </CardAction>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit(handleLoginWithEmail)}>
             <div className="flex flex-col gap-6 my-5">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
+                  {...register("email", { required: true })}
                   id="email"
                   type="email"
                   placeholder="m@example.com"
@@ -48,6 +60,7 @@ const Login = () => {
                   </a>
                 </div>
                 <Input
+                  {...register("password", { required: true })}
                   id="password"
                   className={` py-3 text-black`}
                   type="password"
